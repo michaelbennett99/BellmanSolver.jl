@@ -6,6 +6,10 @@ export tauchen, tauchen_unit_root, make_deterministic_chain, single_price_chain
 export make_k_grid
 export do_VFI, analytical_policy
 
+Real_Vector = AbstractVector{<:Real}
+Real_Matrix = AbstractMatrix{<:Real}
+Real_3Array = AbstractArray{<:Real, 3}
+
 """
     tauchen(N, m, μ, σ, λ)
 
@@ -25,7 +29,7 @@ Tauchen's method for discretizing a state space for a AR(1) process.
 - `trans_dict::Dict{Float64, Vector{Float64}}`: Transition matrix for the AR(1)
 process
 """
-function tauchen(N, m, μ, σ, λ)
+function tauchen(N::Integer, m::Real, μ::Real, σ::Real, λ::Real)
     a = (1 - λ) * μ
     σ_y = σ / sqrt((1 - λ^2))
     
@@ -72,7 +76,7 @@ Using a separate method as I am unsure how to handle the mean.
 
 - `y_grid::Vector{Float64}`: Grid points for the state space
 """
-function tauchen_unit_root(N, m, σ)
+function tauchen_unit_root(N::Integer, m::Real, σ::Real)
     y_1 = -(m * σ)
     y_N = m * σ
     y_grid = collect(range(y_1, y_N, N))
@@ -121,7 +125,7 @@ This would be an identity matrix, but we need to account for the fact that η =
 - `y_grid::Vector{Float64}`: Grid points for the state space
 - `trans_mat::Matrix{Float64}`: Transition matrix for the markov chain
 """
-function make_deterministic_chain(N, min, max, η)
+function make_deterministic_chain(N::Integer, min::Real, max::Real, η::Real)
     y_grid = exp.(collect(range(min, max, N)))
     trans_mat = zeros(N, N)
     for i ∈ 1:N
@@ -134,7 +138,7 @@ function make_deterministic_chain(N, min, max, η)
     return log.(y_grid), trans_mat
 end
 
-function single_price_chain(y_val)
+function single_price_chain(y_val::Real)
     trans_mat = ones((1, 1))
     y_grid = [y_val]
     return y_grid, trans_mat
@@ -158,7 +162,11 @@ Make a matrix of flow values for all combinations of capital stock and price.
 
 - `flow_val_mat::Array{Float64, 3}`: Matrix of flow values
 """
-function make_flow_value_mat(flow_value, k_grid, kp_grid, p_grid; kwargs...)
+function make_flow_value_mat(
+        flow_value::Function,
+        k_grid::Real_Vector, kp_grid::Real_Vector, p_grid::Real_Vector;
+        kwargs...
+    )
     k_N = length(k_grid)
     kp_N = length(kp_grid)
     p_N = length(p_grid)
@@ -194,7 +202,8 @@ function and a transition matrix.
 - `value::Float64`: Value function
 """
 function value_function(
-        flow_value_mat, V, trans_mat, i_k, i_p, i_kp, β
+        flow_value_mat::Real_3Array, V::Real_Matrix, trans_mat::Real_Matrix,
+        i_k:Integer, i_p::Integer, i_kp::Integer, β::Real
     )
     @views flow_val = flow_value_mat[i_k, i_kp, i_p]
     @views ECont = V[i_kp, :] ⋅ trans_mat[i_p, :]
@@ -216,7 +225,7 @@ Make a grid for the capital stock.
 
 - `k_grid::Vector{Float64}`: Grid points for the capital stock
 """
-function make_k_grid(min, max, N)
+function make_k_grid(min::Real, max::Real, N::Integer)
     return collect(Float64, range(min, max, N))
 end
 
@@ -249,8 +258,9 @@ Run value function iteration.
 - `V::Array{Float64, 2}`: Value function
 """
 function do_VFI(
-        flow_value, k_grid, p_grid, trans_mat, β;
-        tol=1e-6, max_iter=1000, kwargs...
+        flow_value::Function, k_grid::Real_Vector, p_grid::Real_Vector,
+        trans_mat::Real_Matrix, β::Real;
+        tol::Real=1e-6, max_iter::Integer=1000, kwargs...
     )
     println("Starting Value Function Iteration...")
 
