@@ -203,7 +203,7 @@ function and a transition matrix.
 """
 function value_function(
         flow_value_mat::Real_3Array, V::Real_Matrix, trans_mat::Real_Matrix,
-        i_k:Integer, i_p::Integer, i_kp::Integer, β::Real
+        i_k::Integer, i_p::Integer, i_kp::Integer, β::Real
     )
     @views flow_val = flow_value_mat[i_k, i_kp, i_p]
     @views ECont = V[i_kp, :] ⋅ trans_mat[i_p, :]
