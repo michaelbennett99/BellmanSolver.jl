@@ -3,7 +3,7 @@ module BellmanSolver
 using Distributions, StatsBase, LinearAlgebra
 
 export tauchen, tauchen_unit_root, make_deterministic_chain, single_price_chain
-export make_k_grid
+export make_k_grid, make_k_grid_δ
 export do_VFI, analytical_policy
 
 Real_Vector = AbstractVector{<:Real}
@@ -227,6 +227,16 @@ Make a grid for the capital stock.
 """
 function make_k_grid(min::Real, max::Real, N::Integer)
     return collect(Float64, range(min, max, N))
+end
+
+function make_k_grid_δ(min::Real, max::Real, δ::Real, N_near::Integer)
+    dist = max - min
+    N_δ = dist / (1 - δ)
+    δ_factor = N_near / N_δ
+    step = (1 - δ) / ceil(Int, δ_factor)
+    k_grid = collect(range(min, max, step=step))
+    N = length(k_grid)
+    return k_grid, N
 end
 
 """
