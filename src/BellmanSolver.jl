@@ -3,8 +3,8 @@ module BellmanSolver
 using Distributions, StatsBase, LinearAlgebra
 
 export tauchen, tauchen_unit_root, make_deterministic_chain, single_price_chain
-export make_k_grid, make_k_grid_δ
-export do_VFI, analytical_policy
+export make_k_grid, make_kp_grid
+export do_VFI, do_VFI_fixed
 
 Real_Vector = AbstractVector{<:Real}
 Real_Matrix = AbstractMatrix{<:Real}
