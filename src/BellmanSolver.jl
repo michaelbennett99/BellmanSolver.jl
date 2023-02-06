@@ -3,8 +3,8 @@ module BellmanSolver
 using Distributions, StatsBase, LinearAlgebra
 
 export tauchen, tauchen_unit_root, make_deterministic_chain, single_price_chain
-export make_k_grid, make_k_grid_δ
-export do_VFI, analytical_policy
+export make_k_grid, make_kp_grid
+export do_VFI
 
 Real_Vector = AbstractVector{<:Real}
 Real_Matrix = AbstractMatrix{<:Real}
@@ -230,33 +230,31 @@ function make_k_grid(min::Real, max::Real, N::Integer)
 end
 
 """
-    make_k_grid_δ(min, max, δ, N_near)
+    make_kp_grid(k_grid, δ)
 
-Make a grid for the capital stock. The grid is spaced so that the grid spacing
-is the smallest multiple of δ that gives more than N_near grid points.
+Make a grid for the capital stock at time t+1, where inaction is always an
+option.
 
 # Arguments
 
-- `min::Real`: Minimum value of the grid
-- `max::Real`: Maximum value of the grid
-- `δ::Real`: Desired grid spacing
-- `N_near::Int`: Minimum number of grid points
+- `k_grid::Vector{Float64}`: Grid points for the capital stock
+- `δ::Real`: Depreciation rate
 
 # Returns
 
-- `k_grid::Vector{Float64}`: Grid points for the capital stock
-- `N::Int`: Number of grid points
+- `kp_grid::Vector{Float64}`: Grid points for the capital stock at time t+1
+- `k_kp_mapping::Dict{Int, Int}`: Mapping from the index of the capital stock
+    to the index of the capital stock at time t+1
 """
-function make_k_grid_δ(
-        min::Real, max::Real, δ::Real, N_near::Integer
-    )::Tuple{Vector{Float64}, Int}
-    dist = max - min
-    N_δ = dist / (1 - δ)
-    δ_factor = N_near / N_δ
-    step = (1 - δ) / ceil(Int, δ_factor)
-    k_grid::Vector{Float64} = collect(Float64, range(min, max, step=step))
-    N::Int = length(k_grid)
-    return k_grid, N
+function make_kp_grid(k_grid::Real_Vector, δ::Real)
+    new_values = k_grid .* (1 - δ)
+    kp_grid_full = unique(sort(cat(k_grid, new_values, dims=1)))
+    k_kp_mapping = Dict{Int, Int}()
+    for (i, k) ∈ enumerate(k_grid)
+        i_kp = findfirst(kp_grid_full .== k)
+        k_kp_mapping[i] = i_kp
+    end
+    return kp_grid_full, k_kp_mapping
 end
 
 """
@@ -341,6 +339,90 @@ function do_VFI(
         end
     end
     return k_grid, p_grid, Kp_mat, V
+end
+
+"""
+    do_VFI(
+        flow_value, k_grid, kp_grid, p_grid, trans_mat, β;
+        tol=1e-6, max_iter=1000, kwargs...
+    )
+
+Run value function iteration.
+
+# Arguments
+
+- `k_grid::Vector{Float64}`: Grid points for the capital stock
+- `p_grid::Vector{Float64}`: Grid points for the price of capital
+- `trans_mat::Array{Float64, 2}`: Transition matrix for the price process
+- `α::Real`: Productivity parameter
+- `δ::Real`: Depreciation rate
+- `r::Real`: Interest rate
+- `g::Real`: Growth rate of the wage rate
+- `w::Real`: Wage rate at time t
+- `tol::Real`: Tolerance for convergence
+- `max_iter::Int`: Maximum number of iterations
+
+# Returns
+
+- `k_grid::Vector{Float64}`: Grid points for the capital stock
+- `p_grid::Vector{Float64}`: Grid points for the price of capital
+- `Kp_mat::Array{Float64, 2}`: Policy function for the capital stock at time t+1
+- `V::Array{Float64, 2}`: Value function
+"""
+function do_VFI(
+        flow_value::Function,
+        k_grid::Real_Vector, kp_grid::Real_Vector, p_grid::Real_Vector,
+        trans_mat::Real_Matrix, β::Real;
+        tol::Real=1e-6, max_iter::Integer=1000, kwargs...
+    )
+    println("Starting Value Function Iteration...")
+
+    k_N = length(k_grid)
+    p_N = length(p_grid)
+    kp_N = length(kp_grid)
+
+    V = zeros(kp_N, p_N)
+
+    kp_mat = Matrix{Float64}(undef, kp_N, p_N)
+
+    println("Making flow value matrix...")
+
+    flow_val_mat = make_flow_value_mat(
+        flow_value, k_grid, kp_grid, p_grid; kwargs...
+    )
+
+    println("Starting iteration...")
+
+    diff = 1
+    iter = 0
+    while diff > tol
+        val_mat = Matrix{Float64}(undef, k_N, p_N)
+        for i_k ∈ 1:length(k_grid), i_p ∈ 1:length(p_grid)
+            val = -Inf
+            val_kp = NaN
+            for (i_kp, kp) ∈ enumerate(kp_grid)
+                candidate_val = value_function(
+                    flow_val_mat, V, trans_mat, i_k, i_p, i_kp, β
+                )
+                if candidate_val > val
+                    val = candidate_val
+                    val_kp = kp
+                end
+            end
+            val_mat[i_k, i_p] = val
+            kp_mat[i_k, i_p] = val_kp
+        end
+        diff = maximum(abs.(V - val_mat))
+        V = val_mat
+        iter += 1
+        if iter % 10 == 0
+            println("Iteration $iter finished, Diff: $diff.")
+        end
+        if iter > max_iter
+            break
+        end
+    end
+    return k_grid, p_grid, kp_mat, V
 end
 
 end
