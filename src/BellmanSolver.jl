@@ -371,7 +371,7 @@ Run value function iteration.
 """
 function do_VFI_fixed(
         flow_value::Function,
-        k_grid::Real_Vector, p_grid::Real_Vector, kp_grid::Real_Vector,
+        k_grid::Real_Vector, kp_grid::Real_Vector, p_grid::Real_Vector,
         trans_mat::Real_Matrix, β::Real;
         tol::Real=1e-6, max_iter::Integer=1000, kwargs...
     )
