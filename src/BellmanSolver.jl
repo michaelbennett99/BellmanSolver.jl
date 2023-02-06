@@ -230,36 +230,6 @@ function make_k_grid(min::Real, max::Real, N::Integer)
 end
 
 """
-    make_k_grid_δ(min, max, δ, N_near)
-
-Make a grid for the capital stock. The grid is spaced so that the grid spacing
-is the smallest multiple of δ that gives more than N_near grid points.
-
-# Arguments
-
-- `min::Real`: Minimum value of the grid
-- `max::Real`: Maximum value of the grid
-- `δ::Real`: Desired grid spacing
-- `N_near::Int`: Minimum number of grid points
-
-# Returns
-
-- `k_grid::Vector{Float64}`: Grid points for the capital stock
-- `N::Int`: Number of grid points
-"""
-function make_k_grid_δ(
-        min::Real, max::Real, δ::Real, N_near::Integer
-    )::Tuple{Vector{Float64}, Int}
-    dist = max - min
-    N_δ = dist / (1 - δ)
-    δ_factor = N_near / N_δ
-    step = (1 - δ) / ceil(Int, δ_factor)
-    k_grid::Vector{Float64} = collect(Float64, range(min, max, step=step))
-    N::Int = length(k_grid)
-    return k_grid, N
-end
-
-"""
     do_VFI(
         k_grid, p_grid, trans_mat, α, δ, r, g, w;
         tol=1e-6, max_iter=1000
