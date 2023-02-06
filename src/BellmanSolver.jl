@@ -400,7 +400,7 @@ function do_VFI_fixed(
         for i_k ∈ 1:length(k_grid), i_p ∈ 1:length(p_grid)
             val = -Inf
             val_kp = NaN
-            for (i_kp, kp) ∈ enumerate(Kp_grid)
+            for (i_kp, kp) ∈ enumerate(kp_grid)
                 candidate_val = value_function(
                     flow_val_mat, V, trans_mat, i_k, i_p, i_kp, β
                 )
@@ -410,7 +410,7 @@ function do_VFI_fixed(
                 end
             end
             val_mat[i_k, i_p] = val
-            Kp_mat[i_k, i_p] = val_kp
+            kp_mat[i_k, i_p] = val_kp
         end
         diff = maximum(abs.(V - val_mat))
         V = val_mat
@@ -422,7 +422,7 @@ function do_VFI_fixed(
             break
         end
     end
-    return k_grid, p_grid, Kp_mat, V
+    return k_grid, p_grid, kp_mat, V
 end
 
 end
