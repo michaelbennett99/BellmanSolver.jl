@@ -4,7 +4,7 @@ using Distributions, StatsBase, LinearAlgebra
 
 export tauchen, tauchen_unit_root, make_deterministic_chain, single_price_chain
 export make_k_grid, make_kp_grid
-export do_VFI, do_VFI_fixed
+export do_VFI
 
 Real_Vector = AbstractVector{<:Real}
 Real_Matrix = AbstractMatrix{<:Real}
@@ -342,9 +342,9 @@ function do_VFI(
 end
 
 """
-    do_VFI_fixed(
-        k_grid, p_grid, trans_mat, α, δ, r, g, w;
-        tol=1e-6, max_iter=1000
+    do_VFI(
+        flow_value, k_grid, kp_grid, p_grid, trans_mat, β;
+        tol=1e-6, max_iter=1000, kwargs...
     )
 
 Run value function iteration.
@@ -369,7 +369,7 @@ Run value function iteration.
 - `Kp_mat::Array{Float64, 2}`: Policy function for the capital stock at time t+1
 - `V::Array{Float64, 2}`: Value function
 """
-function do_VFI_fixed(
+function do_VFI(
         flow_value::Function,
         k_grid::Real_Vector, kp_grid::Real_Vector, p_grid::Real_Vector,
         trans_mat::Real_Matrix, β::Real;
