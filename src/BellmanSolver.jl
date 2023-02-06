@@ -396,7 +396,7 @@ function do_VFI(
     diff = 1
     iter = 0
     while diff > tol
-        val_mat = Matrix{Float64}(undef, k_N, p_N)
+        val_mat = Matrix{Float64}(undef, kp_N, p_N)
         for i_k ∈ 1:length(k_grid), i_p ∈ 1:length(p_grid)
             val = -Inf
             val_kp = NaN
