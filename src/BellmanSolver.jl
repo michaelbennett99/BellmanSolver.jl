@@ -371,7 +371,7 @@ Run value function iteration.
 """
 function do_VFI(
         flow_value::Function,
-        k_grid::Real_Vector, kp_grid::Real_Vector, p_grid::Real_Vector,
+        k_grid::Real_Vector, p_grid::Real_Vector, k_kp_map::Dict{Int, Int},
         trans_mat::Real_Matrix, β::Real;
         tol::Real=1e-6, max_iter::Integer=1000, kwargs...
     )
@@ -379,16 +379,15 @@ function do_VFI(
 
     k_N = length(k_grid)
     p_N = length(p_grid)
-    kp_N = length(kp_grid)
 
-    V = zeros(kp_N, p_N)
+    V = zeros(k_N, p_N)
 
-    kp_mat = Matrix{Float64}(undef, kp_N, p_N)
+    kp_mat = Matrix{Float64}(undef, k_N, p_N)
 
     println("Making flow value matrix...")
 
     flow_val_mat = make_flow_value_mat(
-        flow_value, k_grid, kp_grid, p_grid; kwargs...
+        flow_value, k_grid, k_grid, p_grid; kwargs...
     )
 
     println("Starting iteration...")
@@ -396,11 +395,11 @@ function do_VFI(
     diff = 1
     iter = 0
     while diff > tol
-        val_mat = Matrix{Float64}(undef, kp_N, p_N)
+        val_mat = Matrix{Float64}(undef, k_N, p_N)
         for i_k ∈ 1:length(k_grid), i_p ∈ 1:length(p_grid)
             val = -Inf
             val_kp = NaN
-            for (i_kp, kp) ∈ enumerate(kp_grid)
+            for (i_kp, kp) ∈ enumerate(k_grid)
                 candidate_val = value_function(
                     flow_val_mat, V, trans_mat, i_k, i_p, i_kp, β
                 )
@@ -422,7 +421,8 @@ function do_VFI(
             break
         end
     end
-    return k_grid, p_grid, kp_mat, V
+    k_indices = sort(collect(values(k_kp_map)))
+    return k_grid[k_indices], p_grid, kp_mat[k_indices, :], V[k_indices, :]
 end
 
 end
