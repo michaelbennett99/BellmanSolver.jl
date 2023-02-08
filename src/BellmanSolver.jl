@@ -174,7 +174,6 @@ function make_flow_value_mat(
                 flow_val_mat[i_k, i_kp] = flow_value(k, kp; kwargs...)
             end
         end
-    end
     return flow_val_mat
 end
 
