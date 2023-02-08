@@ -138,6 +138,23 @@ function make_deterministic_chain(N::Integer, min::Real, max::Real, η::Real)
     return log.(y_grid), trans_mat
 end
 
+"""
+    single_price_chain(y_val)
+
+Make a markov chain with a single state.
+
+This will be used to discretise the price state space in the case where the
+price is fixed.
+
+# Arguments
+
+- `y_val::Real`: Value of the price
+
+# Returns
+
+- `y_grid::Vector{Float64}`: Grid points for the state space
+- `trans_mat::Matrix{Float64}`: Transition matrix for the markov chain
+"""
 function single_price_chain(y_val::Real)
     trans_mat = ones((1, 1))
     y_grid = [y_val]
