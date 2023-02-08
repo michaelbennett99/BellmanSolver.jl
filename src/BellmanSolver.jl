@@ -101,6 +101,7 @@ function tauchen_unit_root(N::Integer, m::Real, σ::Real)
     return y_grid, trans_mat
 end
 
+
 """
     make_deterministic_chain(N, min, max)
 
@@ -138,6 +139,7 @@ function make_deterministic_chain(N::Integer, min::Real, max::Real, η::Real)
     return log.(y_grid), trans_mat
 end
 
+
 """
     single_price_chain(y_val)
 
@@ -161,23 +163,24 @@ function single_price_chain(y_val::Real)
     return y_grid, trans_mat
 end
 
+
 """
-    make_flow_value_mat(k_grid, kp_grid, p_grid, w, α, δ)
+    make_flow_value_mat(flow_value, k_grid, kp_grid, p_grid; kwargs...)
 
 Make a matrix of flow values for all combinations of capital stock and price.
 
 # Arguments
 
-- `k_grid::Vector{Float64}`: Grid points for the capital stock
-- `kp_grid::Vector{Float64}`: Grid points for the capital stock at time t+1
-- `p_grid::Vector{Float64}`: Grid points for the price of capital
-- `w::Real`: Wage rate at time t
-- `α::Real`: Productivity parameter
-- `δ::Real`: Depreciation rate
+- `flow_value::Function`: Function to calculate the flow value
+- `k_grid::Vector{Float64}`: Grid points for capital stock
+- `kp_grid::Vector{Float64}`: Grid points for capital stock next period
+- `p_grid::Vector{Float64}`: Grid points for price
+- `kwargs...`: Keyword arguments to pass to `flow_value`. Should be parameters
+    of flow_value
 
 # Returns
 
-- `flow_val_mat::Array{Float64, 3}`: Matrix of flow values
+- `flow_val_mat::Array{Float64, 3}`: 3-array of flow values
 """
 function make_flow_value_mat(
         flow_value::Function,
@@ -197,6 +200,7 @@ function make_flow_value_mat(
     end
     return flow_val_mat
 end
+
 
 """
     value_function(flow_val_mat, V, trans_mat, i_k, i_p, i_kp, β)
@@ -246,54 +250,25 @@ function make_k_grid(min::Real, max::Real, N::Integer)
     return collect(Float64, range(min, max, N))
 end
 
-"""
-    make_kp_grid(k_grid, δ)
-
-Make a grid for the capital stock at time t+1, where inaction is always an
-option.
-
-# Arguments
-
-- `k_grid::Vector{Float64}`: Grid points for the capital stock
-- `δ::Real`: Depreciation rate
-
-# Returns
-
-- `kp_grid::Vector{Float64}`: Grid points for the capital stock at time t+1
-- `k_kp_mapping::Dict{Int, Int}`: Mapping from the index of the capital stock
-    to the index of the capital stock at time t+1
-"""
-function make_kp_grid(k_grid::Real_Vector, δ::Real)
-    new_values = k_grid .* (1 - δ)
-    kp_grid_full = unique(sort(cat(k_grid, new_values, dims=1)))
-    k_kp_mapping = Dict{Int, Int}()
-    for (i, k) ∈ enumerate(k_grid)
-        i_kp = findfirst(kp_grid_full .== k)
-        k_kp_mapping[i] = i_kp
-    end
-    return kp_grid_full, k_kp_mapping
-end
 
 """
     do_VFI(
-        k_grid, p_grid, trans_mat, α, δ, r, g, w;
-        tol=1e-6, max_iter=1000
+        flow_value, k_grid, p_grid, trans_mat, β;
+        tol=1e-6, max_iter=1000, kwargs...
     )
 
 Run value function iteration.
 
 # Arguments
 
+- `flow_value::Function`: Function to compute the flow value
 - `k_grid::Vector{Float64}`: Grid points for the capital stock
 - `p_grid::Vector{Float64}`: Grid points for the price of capital
 - `trans_mat::Array{Float64, 2}`: Transition matrix for the price process
-- `α::Real`: Productivity parameter
-- `δ::Real`: Depreciation rate
-- `r::Real`: Interest rate
-- `g::Real`: Growth rate of the wage rate
-- `w::Real`: Wage rate at time t
-- `tol::Real`: Tolerance for convergence
-- `max_iter::Int`: Maximum number of iterations
+- `β::Real`: Discount factor
+- `tol::Real=1e-6`: Tolerance for convergence
+- `max_iter::Int=1000`: Maximum number of iterations
+- `kwargs...`: Additional keyword arguments for flow_value
 
 # Returns
 
@@ -358,4 +333,4 @@ function do_VFI(
     return k_grid, p_grid, Kp_mat, V
 end
 
-end
+end # module
