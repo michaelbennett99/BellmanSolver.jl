@@ -299,7 +299,7 @@ function do_VFI(
             kp_vct[i_k] = val_kp
         end
         diff = maximum(abs.(V - val_vct))
-        V = val_mat
+        V = val_vct
         iter += 1
         if iter % 10 == 0
             println("Iteration $iter finished, Diff: $diff.")
