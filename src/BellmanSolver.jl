@@ -164,6 +164,21 @@ function single_price_chain(y_val::Real)
 end
 
 
+function make_flow_value_mat(
+        flow_value::Function, k_grid::Real_Vector; kwargs...
+    )
+    k_N = length(k_grid)
+    flow_val_mat = Matrix{Float64}(undef, k_N, k_N)
+    for (i_k, k) ∈ enumerate(k_grid)
+        for (i_kp, kp) ∈ enumerate(k_grid)
+                flow_val_mat[i_k, i_kp] = flow_value(k, kp; kwargs...)
+            end
+        end
+    end
+    return flow_val_mat
+end
+
+
 """
     make_flow_value_mat(flow_value, k_grid, kp_grid, p_grid; kwargs...)
 
@@ -248,6 +263,53 @@ Make a grid for the capital stock.
 """
 function make_k_grid(min::Real, max::Real, N::Integer)
     return collect(Float64, range(min, max, N))
+end
+
+
+function do_VFI(
+        flow_value::Function, k_grid::Real_Vector, β::Real;
+        tol::Real=1e-6, max_iter::Integer=1000, kwargs...
+    )
+    println("Starting Value Function Iteration...")
+
+    k_N = length(k_grid)
+    V = zeros(k_N)
+    kp_vct = Vector{Float64}(undef, k_N)
+
+    println("Making flow value matrix...")
+
+    flow_val_mat = make_flow_value_mat(flow_value, k_grid; kwargs...)
+
+    println("Starting iteration...")
+
+    diff = 1
+    iter = 0
+    while diff > tol
+        val_vct = Vector{Float64}(undef, k_N)
+        for i_k ∈ 1:length(k_grid)
+            val = -Inf
+            val_kp = NaN
+            for (i_kp, kp) ∈ enumerate(k_grid)
+                @views candidate_val = flow_val_mat[i_k, i_kp] + β * V[i_kp]
+                if candidate_val > val
+                    val = candidate_val
+                    val_kp = kp
+                end
+            end
+            val_vct[i_k] = val
+            kp_vct[i_k] = val_kp
+        end
+        diff = maximum(abs.(V - val_vct))
+        V = val_mat
+        iter += 1
+        if iter % 10 == 0
+            println("Iteration $iter finished, Diff: $diff.")
+        end
+        if iter > max_iter
+            break
+        end
+    end
+    return k_grid, kp_vct, V
 end
 
 
