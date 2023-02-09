@@ -141,29 +141,22 @@ end
 
 
 """
-    single_price_chain(y_val)
+    make_flow_value_mat(flow_value, k_grid; kwargs...)
 
-Make a markov chain with a single state.
-
-This will be used to discretise the price state space in the case where the
-price is fixed.
+Make a matrix of flow values for all combinations of the state and choice
+variable, assuming that these inhabit the same grid.
 
 # Arguments
 
-- `y_val::Real`: Value of the price
+- `flow_value::Function`: Function that takes the choice variable and the state
+    variable as arguments, and returns the flow value.
+- `k_grid::Vector{Float64}`: Grid points for the choice variable
+- `kwargs...`: Keyword arguments to be passed to `flow_value`
 
 # Returns
 
-- `y_grid::Vector{Float64}`: Grid points for the state space
-- `trans_mat::Matrix{Float64}`: Transition matrix for the markov chain
+- `flow_val_mat::Matrix{Float64}`: Matrix of flow values
 """
-function single_price_chain(y_val::Real)
-    trans_mat = ones((1, 1))
-    y_grid = [y_val]
-    return y_grid, trans_mat
-end
-
-
 function make_flow_value_mat(
         flow_value::Function, k_grid::Real_Vector; kwargs...
     )
@@ -181,12 +174,13 @@ end
 """
     make_flow_value_mat(flow_value, k_grid, kp_grid, p_grid; kwargs...)
 
-Make a matrix of flow values for all combinations of capital stock and price.
+Make a matrix of flow values for all combinations of the choice variable, as
+well as the deterministic and stochastic state variables.
 
 # Arguments
 
 - `flow_value::Function`: Function to calculate the flow value
-- `k_grid::Vector{Float64}`: Grid points for capital stock
+- `k_grid::Vector{Float64}`: Grid points for 
 - `kp_grid::Vector{Float64}`: Grid points for capital stock next period
 - `p_grid::Vector{Float64}`: Grid points for price
 - `kwargs...`: Keyword arguments to pass to `flow_value`. Should be parameters
@@ -264,7 +258,28 @@ function make_k_grid(min::Real, max::Real, N::Integer)
     return collect(Float64, range(min, max, N))
 end
 
+"""
+    do_VFI(flow_value, k_grid, β; tol=1e-6, max_iter=1000, kwargs...)
 
+Do value function iteration for the case where we optimise over one variable,
+and there are no stochastic elements.
+
+# Arguments
+
+- `flow_value::Function`: Function to calculate the flow value
+- `k_grid::Vector{Float64}`: Grid points for the choice variable
+- `β::Real`: Discount factor
+- `tol::Real=1e-6`: Tolerance for convergence
+- `max_iter::Int=1000`: Maximum number of iterations
+- `kwargs...`: Keyword arguments to pass to `flow_value`. Should be parameters
+    of flow_value
+
+# Returns
+
+- `k_grid::Vector{Float64}`: Grid points for the choice variable
+- `kp_vct::Vector{Float64}`: Optimal choice
+- `V::Vector{Float64}`: Value function
+"""
 function do_VFI(
         flow_value::Function, k_grid::Real_Vector, β::Real;
         tol::Real=1e-6, max_iter::Integer=1000, kwargs...
@@ -318,7 +333,9 @@ end
         tol=1e-6, max_iter=1000, kwargs...
     )
 
-Run value function iteration.
+Do value function iteration for the case where we optimise over one variable,
+and there is one stochastic variable in the value function. The stochastic
+variable is represented by a markov process on a grid.
 
 # Arguments
 
