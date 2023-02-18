@@ -1,5 +1,7 @@
 module Markov
 
+using Distributions
+
 export tauchen, tauchen_unit_root, make_deterministic_chain
 
 """
