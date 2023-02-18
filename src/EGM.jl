@@ -2,11 +2,16 @@ module EGM
 
 using Interpolations, LinearAlgebra
 
+include("Types.jl")
+
+using .Types
+
 export do_EGM
 
 function do_EGM(
-        foc, env, lom, kp_grid, p_grid, trans_mat, β;
-        tol=1e-6, max_iter=1000, kwargs...
+        foc::Function, env::Function, lom::Function,
+        kp_grid::Real_Vector, p_grid::Real_Vector, trans_mat::Real_Matrix, β::Real;
+        tol::Real=1e-6, max_iter::Integer=1000, kwargs...
     )
     N_k = length(kp_grid)
     N_p = length(p_grid)
