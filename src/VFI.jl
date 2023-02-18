@@ -3,6 +3,105 @@ module VFI
 export do_VFI
 
 """
+    make_flow_value_mat(flow_value, k_grid; kwargs...)
+
+Make a matrix of flow values for all combinations of the state and choice
+variable, assuming that these inhabit the same grid.
+
+# Arguments
+
+- `flow_value::Function`: Function that takes the choice variable and the state
+    variable as arguments, and returns the flow value.
+- `k_grid::Vector{Float64}`: Grid points for the choice variable
+- `kwargs...`: Keyword arguments to be passed to `flow_value`
+
+# Returns
+
+- `flow_val_mat::Matrix{Float64}`: Matrix of flow values
+"""
+function make_flow_value_mat(
+        flow_value::Function, k_grid::Real_Vector; kwargs...
+    )
+    k_N = length(k_grid)
+    flow_val_mat = Matrix{Float64}(undef, k_N, k_N)
+    for (i_k, k) ∈ enumerate(k_grid)
+        for (i_kp, kp) ∈ enumerate(k_grid)
+                flow_val_mat[i_k, i_kp] = flow_value(k, kp; kwargs...)
+            end
+        end
+    return flow_val_mat
+end
+
+
+"""
+    make_flow_value_mat(flow_value, k_grid, kp_grid, p_grid; kwargs...)
+
+Make a matrix of flow values for all combinations of the choice variable, as
+well as the deterministic and stochastic state variables.
+
+# Arguments
+
+- `flow_value::Function`: Function to calculate the flow value
+- `k_grid::Vector{Float64}`: Grid points for 
+- `kp_grid::Vector{Float64}`: Grid points for capital stock next period
+- `p_grid::Vector{Float64}`: Grid points for price
+- `kwargs...`: Keyword arguments to pass to `flow_value`. Should be parameters
+    of flow_value
+
+# Returns
+
+- `flow_val_mat::Array{Float64, 3}`: 3-array of flow values
+"""
+function make_flow_value_mat(
+        flow_value::Function,
+        k_grid::Real_Vector, kp_grid::Real_Vector, p_grid::Real_Vector;
+        kwargs...
+    )
+    k_N = length(k_grid)
+    kp_N = length(kp_grid)
+    p_N = length(p_grid)
+    flow_val_mat = Array{Float64, 3}(undef, k_N, kp_N, p_N)
+    for (i_k, k) ∈ enumerate(k_grid)
+        for (i_kp, kp) ∈ enumerate(kp_grid)
+            for (i_p, p) ∈ enumerate(p_grid)
+                flow_val_mat[i_k, i_kp, i_p] = flow_value(k, kp, p; kwargs...)
+            end
+        end
+    end
+    return flow_val_mat
+end
+
+
+"""
+    value_function(flow_val_mat, V, trans_mat, i_k, i_p, i_kp, β)
+
+Compute the value function based on a matrix of flow values, an old value
+function and a transition matrix.
+
+# Arguments
+
+- `flow_value_mat::Array{Float64, 3}`: Matrix of flow values
+- `V::Array{Float64, 2}`: Old value function
+- `trans_mat::Array{Float64, 2}`: Transition matrix for the price process
+- `i_k::Int`: Index of the capital stock
+- `i_p::Int`: Index of the price of capital
+- `i_kp::Int`: Index of the capital stock at time t+1
+- `β::Real`: Discount factor
+
+# Returns
+
+- `value::Float64`: Value function
+"""
+function value_function(
+        flow_value_mat::Real_3Array, V::Real_Matrix, trans_mat::Real_Matrix,
+        i_k::Integer, i_p::Integer, i_kp::Integer, β::Real
+    )
+    @views flow_val = flow_value_mat[i_k, i_kp, i_p]
+    @views ECont = V[i_kp, :] ⋅ trans_mat[i_p, :]
+    return flow_val + β * ECont
+end
+
+"""
     do_VFI(flow_value, k_grid, β; tol=1e-6, max_iter=1000, kwargs...)
 
 Do value function iteration for the case where we optimise over one variable,
