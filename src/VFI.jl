@@ -1,5 +1,3 @@
-module VFI
-
 using LinearAlgebra
 
 include("Types.jl")
@@ -259,5 +257,3 @@ function do_VFI(
     end
     return k_grid, p_grid, Kp_mat, V
 end
-
-end # module

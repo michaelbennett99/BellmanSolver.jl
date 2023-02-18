@@ -1,5 +1,3 @@
-module EGM
-
 using Interpolations, LinearAlgebra
 
 include("Types.jl")
@@ -54,5 +52,3 @@ function do_EGM(
     end
     throw(error("EGM did not converge after $max_iter iterations."))
 end
-
-end # module

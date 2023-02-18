@@ -5,8 +5,6 @@ include("Markov.jl")
 include("VFI.jl")
 include("EGM.jl")
 
-using .Utils, .Markov, .VFI, .EGM
-
 export make_k_grid
 export tauchen, tauchen_unit_root, make_deterministic_chain
 export do_VFI
