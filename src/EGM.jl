@@ -1,9 +1,5 @@
 using Interpolations, LinearAlgebra
 
-include("Types.jl")
-
-using .Types
-
 export do_EGM
 
 function do_EGM(

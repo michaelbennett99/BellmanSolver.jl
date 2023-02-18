@@ -1,9 +1,5 @@
 using LinearAlgebra
 
-include("Types.jl")
-
-using .Types
-
 export do_VFI
 
 """
