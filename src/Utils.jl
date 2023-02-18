@@ -1,3 +1,5 @@
+export make_k_grid
+
 """
     make_k_grid(min, max, N)
 
