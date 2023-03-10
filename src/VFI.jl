@@ -1,4 +1,4 @@
-using LinearAlgebra
+using LinearAlgebra, Interpolation, NumericalMinimisation
 
 export do_VFI
 
@@ -155,6 +155,52 @@ function do_VFI(
             end
             val_vct[i_k] = val
             kp_vct[i_k] = val_kp
+        end
+        diff = maximum(abs.(V - val_vct))
+        V = val_vct
+        iter += 1
+        if iter % 10 == 0
+            println("Iteration $iter finished, Diff: $diff.")
+        end
+        if iter > max_iter
+            break
+        end
+    end
+    return k_grid, kp_vct, V
+end
+
+function do_VFI(
+        flow_value::Function, k_grid::Real_Vector, β::Real, interp::Function;
+        tol::Real=1e-6, max_iter::Integer=1000, kwargs...
+    )
+    println("Starting Value Function Iteration...")
+
+    k_N = length(k_grid)
+    V = zeros(k_N)
+    V_i = zeros(k_N)
+    kp_vct = Vector{Float64}(undef, k_N)
+
+    println("Making flow value matrix...")
+
+    flow_val_mat = make_flow_value_mat(flow_value, k_grid; kwargs...)
+
+    println("Starting iteration...")
+
+    diff = 1
+    iter = 0
+    while diff > tol
+        val_vct = Vector{Float64}(undef, k_N)
+        for i_k ∈ 1:k_N
+            for i_kp ∈ 1:k_N
+                @views V_i[i_kp] = flow_val_mat[i_k, i_kp] + β * V[i_kp]
+            end
+            V_i_fn = interp(k_grid, V_i)
+            obj_fn = x -> -V_i_fn(x)
+            kp_max, obj_min, _ = brent(
+                obj_fn, k_grid[1], k_grid[floor(k_N/2)], k_grid[end]
+            )
+            val_vct[i_k] = -obj_min
+            kp_vct[i_k] = kp_max
         end
         diff = maximum(abs.(V - val_vct))
         V = val_vct
