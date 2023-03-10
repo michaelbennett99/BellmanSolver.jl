@@ -1,5 +1,4 @@
 using LinearAlgebra, Interpolation, Optim
-
 export do_VFI
 
 """
@@ -194,14 +193,16 @@ function do_VFI(
             for i_kp ∈ 1:k_N
                 @views V_i[i_kp] = flow_val_mat[i_k, i_kp] + β * V[i_kp]
             end
-            V_i_fn = interp(k_grid, V_i)
-            obj_fn = x -> -1*V_i_fn(x)
-            result = optimize(obj_fn, k_grid[1], k_grid[end])
-            if !result.converged
+            feasible = .!isinf.(V_i)
+            @views f_k = k_grid[feasible]
+            @views f_V = V_i[feasible]
+            V_i_fn = interp(f_k, f_V)
+            @views result = Optim.maximize(V_i_fn, f_k[1], f_k[end], Brent())
+            if ! Optim.converged(result)
                 error("Optimization did not converge.")
             end
-            kp_max = result.minimizer
-            val_vct[i_k] = V_i_fn(kp_max)
+            kp_max = Optim.maximizer(result)
+            val_vct[i_k] = Optim.maximum(result)
             kp_vct[i_k] = kp_max
         end
         diff = maximum(abs.(V - val_vct))
