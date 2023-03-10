@@ -1,4 +1,4 @@
-using LinearAlgebra, Interpolation, Optim, NumericalMinimisation
+using LinearAlgebra, Interpolation, NumericalMinimisation
 
 export do_VFI
 
