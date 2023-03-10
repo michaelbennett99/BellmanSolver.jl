@@ -198,7 +198,7 @@ function do_VFI(
             f_k = k_grid[feasible]
             f_V = V_i[feasible]
             V_i_fn = interp(f_k, f_V)
-            @views result = Optim.maximize(V_i_fn, f_k[1], f_k[end], Brent())
+            @views result = Optim.maximize(V_i_fn, f_k[1], f_k[end])
             if ! Optim.converged(result)
                 error("Optimization did not converge.")
             end
