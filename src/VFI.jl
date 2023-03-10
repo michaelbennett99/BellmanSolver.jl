@@ -1,4 +1,4 @@
-using LinearAlgebra, Interpolation, Optim
+using LinearAlgebra, Interpolation, Optim, NumericalMinimisation
 
 export do_VFI
 
@@ -198,12 +198,11 @@ function do_VFI(
             f_k = k_grid[feasible]
             f_V = V_i[feasible]
             V_i_fn = interp(f_k, f_V)
-            @views result = Optim.maximize(V_i_fn, f_k[1], f_k[end])
-            if ! Optim.converged(result)
-                error("Optimization did not converge.")
-            end
-            kp_max = Optim.maximizer(result)
-            val_vct[i_k] = Optim.maximum(result)
+            obj = x -> -1*V_i_fn(x)
+            @views kp_max, obj_min, _ = brent(
+                obj, f_k[1], f_k[floor(Int, length(f_k)/2)] , f_k[end]
+            )
+            val_vct[i_k] = -obj_min
             kp_vct[i_k] = kp_max
         end
         diff = maximum(abs.(V - val_vct))
