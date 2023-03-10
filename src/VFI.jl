@@ -1,4 +1,4 @@
-using LinearAlgebra, Interpolation, NumericalMinimisation
+using LinearAlgebra, Interpolation, Optim
 
 export do_VFI
 
@@ -195,11 +195,13 @@ function do_VFI(
                 @views V_i[i_kp] = flow_val_mat[i_k, i_kp] + β * V[i_kp]
             end
             V_i_fn = interp(k_grid, V_i)
-            obj_fn = x -> -V_i_fn(x)
-            kp_max, obj_min, _ = brent(
-                obj_fn, k_grid[1], k_grid[floor(k_N/2)], k_grid[end]
-            )
-            val_vct[i_k] = -obj_min
+            obj_fn = x -> -1*V_i_fn(x)
+            result = optimize(obj_fn, k_grid[1], k_grid[end])
+            if !result.converged
+                error("Optimization did not converge.")
+            end
+            kp_max = result.minimizer
+            val_vct[i_k] = V_i_fn(kp_max)
             kp_vct[i_k] = kp_max
         end
         diff = maximum(abs.(V - val_vct))
