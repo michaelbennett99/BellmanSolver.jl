@@ -32,7 +32,5 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v1
-      - run: julia -e 'using Pkg; Pkg.add(url="https://github.com/michaelbennett99/NumericalMethods.jl")'
-      - run: julia -e 'using Pkg; Pkg.Registry.update()'
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
