@@ -26,6 +26,7 @@ jobs:
         arch:
           - x64
     steps:
+      - uses: julia -e 'using Pkg; Pkg.add(url="https://github.com/michaelbennett99/NumericalMethods.jl")'
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1
         with:
