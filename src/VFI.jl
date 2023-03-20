@@ -1,4 +1,5 @@
-using LinearAlgebra, Interpolation, NumericalMinimisation
+using LinearAlgebra
+using NumericalMethods: Interp
 
 export do_VFI
 
@@ -169,8 +170,33 @@ function do_VFI(
     return k_grid, kp_vct, V
 end
 
+"""
+    do_VFI(flow_value, k_grid, β, interp; tol=1e-6, max_iter=1000, kwargs...)
+
+Do Value Function Iteration for the case where we optimise over one variable and
+there are no stochastic elements, using interpolation to optimise over an
+interval for each grid point.
+
+# Arguments
+
+- `flow_value::Function`: Function to calculate the flow value
+- `k_grid::Vector{Float64}`: Grid points for the choice variable
+- `β::Real`: Discount factor
+- `interp::AbstractInterpolator`: Interpolator to use
+- `tol::Real=1e-6`: Tolerance for convergence
+- `max_iter::Int=1000`: Maximum number of iterations
+- `kwargs...`: Keyword arguments to pass to `flow_value`. Should be parameters
+    of flow_value
+
+# Returns
+
+- `k_grid::Vector{Float64}`: Grid points for the choice variable
+- `kp_vct::Vector{Float64}`: Optimal choice
+- `V::Vector{Float64}`: Value function
+"""
 function do_VFI(
-        flow_value::Function, k_grid::Real_Vector, β::Real, interp::Function;
+        flow_value::Function, k_grid::Real_Vector, β::Real,
+        interp::AbstractInterpolator;
         tol::Real=1e-6, max_iter::Integer=1000, kwargs...
     )
     println("Starting Value Function Iteration...")
@@ -199,7 +225,7 @@ function do_VFI(
             f_V = V_i[feasible]
             V_i_fn = interp(f_k, f_V)
             obj = x -> -1*V_i_fn(x)
-            @views kp_max, obj_min, _ = brent(
+            @views kp_max, obj_min, _ = Min.brent(
                 obj, f_k[1], f_k[floor(Int, length(f_k)/2)] , f_k[end]
             )
             val_vct[i_k] = -obj_min
