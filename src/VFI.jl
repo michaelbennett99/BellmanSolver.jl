@@ -1,5 +1,5 @@
 using LinearAlgebra
-using NumericalMethods: AbstractInterpolator
+using NumericalMethods: Interp
 
 export do_VFI
 
@@ -196,7 +196,7 @@ interval for each grid point.
 """
 function do_VFI(
         flow_value::Function, k_grid::Real_Vector, β::Real,
-        interp::AbstractInterpolator;
+        interp::Interp.AbstractInterpolator;
         tol::Real=1e-6, max_iter::Integer=1000, kwargs...
     )
     println("Starting Value Function Iteration...")
