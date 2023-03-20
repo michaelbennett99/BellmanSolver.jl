@@ -1,5 +1,5 @@
 using LinearAlgebra
-using NumericalMethods: Interp
+using NumericalMethods.Interp
 
 export do_VFI
 
