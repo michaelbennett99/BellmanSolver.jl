@@ -1,5 +1,5 @@
 using LinearAlgebra
-using NumericalMethods: Interp
+using NumericalMethods: AbstractInterpolator
 
 export do_VFI
 
