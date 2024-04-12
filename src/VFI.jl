@@ -1,5 +1,6 @@
 using LinearAlgebra
 using NumericalMethods.Interp
+using NumericalMethods.Min
 
 export do_VFI
 
@@ -225,7 +226,7 @@ function do_VFI(
             f_V = V_i[feasible]
             V_i_fn = interp(f_k, f_V)
             obj = x -> -1*V_i_fn(x)
-            @views kp_max, obj_min, _ = Min.brent(
+            @views kp_max, obj_min, _ = brent(
                 obj, f_k[1], f_k[floor(Int, length(f_k)/2)] , f_k[end]
             )
             val_vct[i_k] = -obj_min
