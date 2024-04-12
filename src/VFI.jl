@@ -43,7 +43,7 @@ well as the deterministic and stochastic state variables.
 # Arguments
 
 - `flow_value::Function`: Function to calculate the flow value
-- `k_grid::Vector{Float64}`: Grid points for 
+- `k_grid::Vector{Float64}`: Grid points for
 - `kp_grid::Vector{Float64}`: Grid points for capital stock next period
 - `p_grid::Vector{Float64}`: Grid points for price
 - `kwargs...`: Keyword arguments to pass to `flow_value`. Should be parameters

@@ -24,14 +24,14 @@ process
 function tauchen(N::Integer, m::Real, μ::Real, σ::Real, λ::Real)
     a = (1 - λ) * μ
     σ_y = σ / sqrt((1 - λ^2))
-    
+
     y_1 = -(m * σ_y)
     y_N = m * σ_y
     y_grid = collect(range(y_1, y_N, N))
     y_grid .+= μ
-    
+
     w = y_grid[2] - y_grid[1]
-    
+
     trans_mat = Matrix{Float64}(undef, N, N)
     for (i, y_i) in enumerate(y_grid)
         for (j, y_j) in enumerate(y_grid)
