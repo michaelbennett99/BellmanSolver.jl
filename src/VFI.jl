@@ -1,6 +1,10 @@
+module VFI
+
 using LinearAlgebra
 using NumericalMethods.Interp
 using NumericalMethods.Min
+
+using ..Types
 
 export do_VFI
 
@@ -329,3 +333,5 @@ function do_VFI(
     end
     return k_grid, p_grid, Kp_mat, V
 end
+
+end # module

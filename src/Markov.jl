@@ -1,3 +1,5 @@
+module Markov
+
 using Distributions
 
 export tauchen, tauchen_unit_root, make_deterministic_chain
@@ -130,3 +132,5 @@ function make_deterministic_chain(N::Integer, min::Real, max::Real, η::Real)
     end
     return log.(y_grid), trans_mat
 end
+
+end # module

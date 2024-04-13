@@ -1,4 +1,8 @@
+module EGM
+
 using Interpolations, LinearAlgebra
+
+using ..Types
 
 export do_EGM
 
@@ -78,3 +82,5 @@ function do_EGM(
     end
     throw(error("EGM did not converge after $max_iter iterations."))
 end
+
+end # module

@@ -6,4 +6,11 @@ include("Markov.jl")
 include("VFI.jl")
 include("EGM.jl")
 
+
+export Types
+export Utils
+export Markov
+export VFI
+export EGM
+
 end # module
