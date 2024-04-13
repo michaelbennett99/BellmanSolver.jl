@@ -12,4 +12,6 @@ makedocs(
     ]
 )
 
-deploydocs("github.com/michaelbennett99/BellmanSolver.jl")
+deploydocs(
+    repo = "github.com/michaelbennett99/BellmanSolver.jl"
+)
