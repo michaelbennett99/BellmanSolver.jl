@@ -13,5 +13,6 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/michaelbennett99/BellmanSolver.jl"
+    repo = "github.com/michaelbennett99/BellmanSolver.jl",
+    devurl = "current"
 )
