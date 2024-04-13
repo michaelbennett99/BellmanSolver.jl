@@ -1,6 +1,7 @@
 # BellmanSolver.jl Documentation
 
 ```@contents
+Pages = ["utils.md", "markov.md", "VFI.md", "egm.md"]
 Depth = 1
 ```
 
