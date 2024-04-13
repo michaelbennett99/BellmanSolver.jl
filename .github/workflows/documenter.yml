@@ -18,6 +18,8 @@ jobs:
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1.9'
+      - name: Add registries
+        run: julia -e 'using Pkg; pkg"registry add General https://github.com/michaelbennett99/MyRegistry.jl"'
       - name: Install dependencies
         run: |
           julia --project=docs/ -e '
