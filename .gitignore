@@ -1,2 +1,5 @@
 /Manifest.toml
 .DS_Store
+
+# Docs build directory
+docs/build
